@@ -2,14 +2,10 @@ import { appConfig } from "../utilities/app-config.js";
 import { generateUUIDv7 } from "../utilities/common-function.js";
 import { getCache, deleteCache } from "../utilities/redis-connection.js";
 import { createLogger } from "../utilities/logger.js";
-import { logEventAndEmitResponse, PinsData } from "../utilities/helper-function.js";
+import { logEventAndEmitResponse } from "../utilities/helper-function.js";
 import { getResult } from "../module/bets/bet-session.js";
 const betLogger = createLogger('Bets', 'jsonl');
 
-
-export const emitValuesMultiplier = (socket)=> {
-    socket.emit('multiplier_values', JSON.stringify(PinsData()));
-} 
 
 export const placeBet = async(socket, betData) => {
     const betAmount = Number(betData[0]) || null;

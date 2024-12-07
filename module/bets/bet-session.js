@@ -1,10 +1,10 @@
 import { appConfig } from "../../utilities/app-config.js";
 import { updateBalanceFromAccount } from "../../utilities/common-function.js";
-import { getRandomMultiplier, PinsData } from "../../utilities/helper-function.js";
+import { getRandomMultiplier } from "../../utilities/helper-function.js";
 import { getCache, setCache } from "../../utilities/redis-connection.js";
 import { insertSettlement } from "./bet-db.js";
 
-export const getResult = async(matchId, betAmount, selectedMultiplier, playerDetails, socket)=> {
+export const getResult = async (matchId, betAmount, selectedMultiplier, playerDetails, socket) => {
     const userIP = socket.handshake.headers?.['x-forwarded-for']?.split(',')[0].trim() || socket.handshake.address;
     const playerId = playerDetails.id.split(':')[1];
 
@@ -23,11 +23,10 @@ export const getResult = async(matchId, betAmount, selectedMultiplier, playerDet
     socket.emit('info', { user_id: playerDetails.userId, operator_id: playerDetails.operatorId, balance: playerDetails.balance });
     const bet_id = `BT:${matchId}:${playerDetails.operatorId}:${playerDetails.userId}:${betAmount}:${selectedMultiplier}`;
     const RandomMultiplier = getRandomMultiplier();
-    const winningMultiplierIndex = multiplierData.index;
-    const winningMultiplier = multiplierData.multiplier;
-    const winAmount = Math.min((Number(betAmount) * winningMultiplier), Number(appConfig.maxCashoutAmount)).toFixed(2);
-    setTimeout(async()=> {
-        if(Number(winAmount) > 0){
+    const isWin = selectedMultiplier >= RandomMultiplier;
+    if (isWin) {
+        const winAmount = Math.min((Number(betAmount) * selectedMultiplier), Number(appConfig.maxCashoutAmount)).toFixed(2);
+        setTimeout(async () => {
             const updateBalanceData = {
                 id: matchId,
                 winning_amount: winAmount,
@@ -39,20 +38,16 @@ export const getResult = async(matchId, betAmount, selectedMultiplier, playerDet
             const isTransactionSuccessful = await updateBalanceFromAccount(updateBalanceData, "CREDIT", playerDetails);
             if (!isTransactionSuccessful) console.error(`Credit failed for user: ${playerDetails.userId} for round ${matchId}`);
             const creditPlayerDetails = await getCache(`PL:${playerDetails.socketId}`);
-            if(creditPlayerDetails){
+            if (creditPlayerDetails) {
                 let parseduserDetails = JSON.parse(creditPlayerDetails);
                 parseduserDetails.balance = (Number(parseduserDetails.balance) + Number(winAmount)).toFixed(2);
                 await setCache(`PL:${parseduserDetails.socketId}`, JSON.stringify(parseduserDetails));
                 socket.emit('info', { user_id: parseduserDetails.userId, operator_id: parseduserDetails.operatorId, balance: parseduserDetails.balance });
             }
-        }
-        //Insert Into Settlement
-        await insertSettlement({
-            betId: bet_id,
-            multiplier: winningMultiplier,
-            winAmount: winAmount
-        });
-    }, 2000);
-  
-    return { winningMultiplier };
+            //Insert Into Settlement
+            await insertSettlement(bet_id);
+        }, 2000);
+    }
+
+    return { winningMultiplier: RandomMultiplier };
 }
