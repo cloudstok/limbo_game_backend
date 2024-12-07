@@ -14,7 +14,7 @@ export const placeBet = async(socket, betData) => {
     const cachedPlayerDetails = await getCache(`PL:${socket.id}`);
     if(!cachedPlayerDetails) return socket.emit('betError', 'Invalid Player Details');
     const playerDetails = JSON.parse(cachedPlayerDetails);
-    const gameLog = { logId: generateUUIDv7(), player: playerDetails, betData};
+    const gameLog = { logId: generateUUIDv7(), player: playerDetails, betData: {betAmount, selectedMultiplier}};
     if(Number(playerDetails.balance) < betAmount) return logEventAndEmitResponse(gameLog, 'Insufficient Balance', 'bet', socket);
     if((betAmount < appConfig.minBetAmount) || (betAmount > appConfig.maxBetAmount)) return logEventAndEmitResponse(gameLog, 'Invalid Bet', 'bet', socket);
     const matchId = generateUUIDv7();

@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS `settlement`(
   `operator_id` varchar(255) DEFAULT NULL,
   `bet_amount` decimal(10, 2) DEFAULT 0.00,
   `max_mult` decimal(10, 2) DEFAULT 0.00,
+  `match_max_mult` decimal(10, 2) DEFAULT 0.00,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`settlement_id`)
 );

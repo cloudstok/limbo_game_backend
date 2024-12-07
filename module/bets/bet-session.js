@@ -22,8 +22,8 @@ export const getResult = async (matchId, betAmount, selectedMultiplier, playerDe
     await setCache(`PL:${playerDetails.socketId}`, JSON.stringify(playerDetails));
     socket.emit('info', { user_id: playerDetails.userId, operator_id: playerDetails.operatorId, balance: playerDetails.balance });
     const bet_id = `BT:${matchId}:${playerDetails.operatorId}:${playerDetails.userId}:${betAmount}:${selectedMultiplier}`;
-    const RandomMultiplier = getRandomMultiplier();
-    const isWin = selectedMultiplier >= RandomMultiplier;
+    const RandomMultiplier = Number(getRandomMultiplier());
+    const isWin = RandomMultiplier >= selectedMultiplier;
     if (isWin) {
         const winAmount = Math.min((Number(betAmount) * selectedMultiplier), Number(appConfig.maxCashoutAmount)).toFixed(2);
         setTimeout(async () => {
@@ -45,7 +45,7 @@ export const getResult = async (matchId, betAmount, selectedMultiplier, playerDe
                 socket.emit('info', { user_id: parseduserDetails.userId, operator_id: parseduserDetails.operatorId, balance: parseduserDetails.balance });
             }
             //Insert Into Settlement
-            await insertSettlement(bet_id);
+            await insertSettlement(bet_id, RandomMultiplier);
         }, 2000);
     }
 
