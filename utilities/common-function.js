@@ -56,7 +56,7 @@ export const sendRequestToAccounts = async(webhookData, token)=> {
         if (!data.status) return false;
         return true;
     } catch (err) {
-        console.error(`Err while sending request to accounts is:::`, err?.message);
+        console.error(`Err while sending request to accounts is:::`, err?.response?.data);
         failedThirdPartyLogger.error(JSON.stringify({ logId: generateUUIDv7(), req: {webhookData, token}, res: err?.response?.status}));
         return false;
     }
@@ -76,14 +76,14 @@ export const prepareDataForWebhook = async(betObj, key) => {
         switch (key) {
             case "DEBIT":
                 obj.amount = bet_amount,
-                obj.description = `${bet_amount} debited for Plinko game for Round ${id}`;
+                obj.description = `${bet_amount} debited for Limbo game for Round ${id}`;
                 obj.bet_id = id;
                 obj.txn_type = 0;
                 break;
             case "CREDIT":
                 obj.amount = winning_amount;
                 obj.txn_ref_id = txn_id;
-                obj.description = `${winning_amount} credited for Plinko game for Round ${id}`;
+                obj.description = `${winning_amount} credited for Limbo game for Round ${id}`;
                 obj.txn_type = 1;
                 break;
             default:

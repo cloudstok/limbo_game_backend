@@ -4,7 +4,7 @@ import { getRandomMultiplier } from "../../utilities/helper-function.js";
 import { getCache, setCache } from "../../utilities/redis-connection.js";
 import { insertSettlement } from "./bet-db.js";
 
-export const getResult = async (matchId, betAmount, selectedMultiplier, playerDetails, socket) => {
+export const getResult = async (matchId, betAmount, selectedMultiplier, playerDetails, socket, io) => {
     const userIP = socket.handshake.headers?.['x-forwarded-for']?.split(',')[0].trim() || socket.handshake.address;
     const playerId = playerDetails.id.split(':')[1];
 
@@ -37,6 +37,7 @@ export const getResult = async (matchId, betAmount, selectedMultiplier, playerDe
             };
             const isTransactionSuccessful = await updateBalanceFromAccount(updateBalanceData, "CREDIT", playerDetails);
             if (!isTransactionSuccessful) console.error(`Credit failed for user: ${playerDetails.userId} for round ${matchId}`);
+            if(winAmount > betAmount) socket.emit('cashout', { winAmount});
             const creditPlayerDetails = await getCache(`PL:${playerDetails.socketId}`);
             if (creditPlayerDetails) {
                 let parseduserDetails = JSON.parse(creditPlayerDetails);
@@ -44,10 +45,16 @@ export const getResult = async (matchId, betAmount, selectedMultiplier, playerDe
                 await setCache(`PL:${parseduserDetails.socketId}`, JSON.stringify(parseduserDetails));
                 socket.emit('info', { user_id: parseduserDetails.userId, operator_id: parseduserDetails.operatorId, balance: parseduserDetails.balance });
             }
-            //Insert Into Settlement
-            await insertSettlement(bet_id, RandomMultiplier);
         }, 2000);
-    }
-
+    };
+    io.emit('bets', {
+        userId: `${playerDetails.userId.slice(0, 2)}**${playerDetails.userId.slice(-2)}`,
+        time : new Date(),
+        betAmount, 
+        multiplier: isWin ? selectedMultiplier : 0.00,
+        payout: isWin ? Math.min((Number(betAmount) * selectedMultiplier), Number(appConfig.maxCashoutAmount)).toFixed(2) : 0.00
+    });
+    //Insert Into Settlement
+    await insertSettlement(bet_id, RandomMultiplier);
     return { winningMultiplier: RandomMultiplier };
 }

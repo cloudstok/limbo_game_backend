@@ -19,7 +19,7 @@ export const initSocket = (io)=> {
 
         socket.emit('info', { user_id: userData.userId, operator_id: userData.operatorId, balance: Number(userData.balance).toFixed(2)});
         await setCache(`PL:${socket.id}`, JSON.stringify({...userData, socketId: socket.id}), 3600);
-        registerEvents(socket);
+        registerEvents(io, socket);
         socket.on('error', (error) => {
             console.error(`Socket error: ${socket.id}. Error: ${error.message}`);
         });

@@ -7,7 +7,7 @@ import { getResult } from "../module/bets/bet-session.js";
 const betLogger = createLogger('Bets', 'jsonl');
 
 
-export const placeBet = async(socket, betData) => {
+export const placeBet = async(io, socket, betData) => {
     const betAmount = Number(betData[0]) || null;
     const selectedMultiplier = Number(betData[1]) || null;
     if(!betAmount || !selectedMultiplier) return socket.emit('betError', 'Bet Amount and Multiplier Value is missing in request');
@@ -18,7 +18,7 @@ export const placeBet = async(socket, betData) => {
     if(Number(playerDetails.balance) < betAmount) return logEventAndEmitResponse(gameLog, 'Insufficient Balance', 'bet', socket);
     if((betAmount < appConfig.minBetAmount) || (betAmount > appConfig.maxBetAmount)) return logEventAndEmitResponse(gameLog, 'Invalid Bet', 'bet', socket);
     const matchId = generateUUIDv7();
-    const result = await getResult(matchId, betAmount, selectedMultiplier, playerDetails, socket);
+    const result = await getResult(matchId, betAmount, selectedMultiplier, playerDetails, socket, io);
     betLogger.info(JSON.stringify({ ...gameLog, result }))
     socket.emit('result', result);
 };
