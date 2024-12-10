@@ -45,7 +45,7 @@ export const getResult = async (matchId, betAmount, selectedMultiplier, playerDe
                 await setCache(`PL:${parseduserDetails.socketId}`, JSON.stringify(parseduserDetails));
                 socket.emit('info', { user_id: parseduserDetails.userId, operator_id: parseduserDetails.operatorId, balance: parseduserDetails.balance });
             }
-        }, 2000);
+        }, 500);
     };
     io.emit('bets', {
         userId: `${playerDetails.userId.slice(0, 2)}**${playerDetails.userId.slice(-2)}`,
