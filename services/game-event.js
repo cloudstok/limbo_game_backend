@@ -19,6 +19,7 @@ export const placeBet = async(io, socket, betData) => {
     if((betAmount < appConfig.minBetAmount) || (betAmount > appConfig.maxBetAmount)) return logEventAndEmitResponse(gameLog, 'Invalid Bet', 'bet', socket);
     const matchId = generateUUIDv7();
     const result = await getResult(matchId, betAmount, selectedMultiplier, playerDetails, socket, io);
+    if(result['error']) return logEventAndEmitResponse(gameLog, result['error'], 'bet', socket);
     betLogger.info(JSON.stringify({ ...gameLog, result }))
     socket.emit('result', result);
 };
