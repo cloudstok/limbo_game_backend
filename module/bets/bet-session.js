@@ -52,6 +52,8 @@ export const getResult = async (matchId, betAmount, selectedMultiplier, playerDe
         time : new Date(),
         betAmount, 
         multiplier: isWin ? selectedMultiplier : 0.00,
+        max_mult: selectedMultiplier,
+        match_max_mult: RandomMultiplier,
         payout: isWin ? Math.min((Number(betAmount) * selectedMultiplier), Number(appConfig.maxCashoutAmount)).toFixed(2) : 0.00
     });
     //Insert Into Settlement
