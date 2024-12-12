@@ -9,7 +9,7 @@ export const logEventAndEmitResponse = (req, res, event, socket) => {
   return socket.emit('betError', res);
 }
 
-const RTP = 9500;
+const RTP = 9300;
 
 export const getRandomMultiplier = () => {
     const win_per = (Math.random() * 99.00);
