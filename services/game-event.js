@@ -11,6 +11,7 @@ export const placeBet = async(io, socket, betData) => {
     const betAmount = Number(betData[0]) || null;
     const selectedMultiplier = Number(betData[1]) || null;
     if(!betAmount || !selectedMultiplier) return socket.emit('betError', 'Bet Amount and Multiplier Value is missing in request');
+    if(betAmount <= 0 || selectedMultiplier <= 1) return socket.emit('betError', 'Invalid Bet Amount or Multiplier requested');
     const cachedPlayerDetails = await getCache(`PL:${socket.id}`);
     if(!cachedPlayerDetails) return socket.emit('betError', 'Invalid Player Details');
     const playerDetails = JSON.parse(cachedPlayerDetails);
